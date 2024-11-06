@@ -1,0 +1,31 @@
+// Switch to the student database
+use student
+
+// Show collections in the database
+show collections
+
+// Insert multiple documents into the college collection
+db.college.insertMany([
+   { id: 1, name: "Kevin", age: 20, course: "CS", marks: 85 },
+   { id: 2, name: "Maya", age: 20, course: "IT", marks: 98 },
+   { id: 3, name: "David", age: 20, course: "AI-DS", marks: 56 },
+   { id: 4, name: "Mia", age: 20, course: "AI-ML", marks: 78 }
+])
+
+// Perform aggregation on the college collection to calculate average marks per course
+db.college.aggregate([
+   {
+      $group: {
+         _id: "$course",
+         avgMarks: { $avg: "$marks" }
+      }
+   }
+])
+
+// Insert documents into the grades collection
+db.grades.insertMany([
+   { gid: 1, id: 1, sub: "PDS", grade: "A" },
+   { gid: 2, id: 2, sub: "OS", grade: "B" },
+   { gid: 3, id: 3, sub: "DSA", grade: "A" },
+   { gid: 4, id: 4, sub: "ML", grade: "C" }
+])
