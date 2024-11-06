@@ -1,0 +1,23 @@
+create table students (stud_id int, name varchar(50), city varchar(20) );
+
+
+insert into students values (1, "Gaurav", "Karad"),(2, "Lalit", "Dhule"),(3, "Aarya","Latur"),(4, "Saksham","Delhi"),(5, "Jeevan", "Jamkhed");
+
+
+select * from students;
+
+
+mysql> show variables like 'secure_file_priv';
+
+
+ select * from students into outfile 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/stud_info.csv' fields terminated by ',' enclosed by '"' lines terminated by '\n';
+
+ create table imported_data(id int, name varchar(50), city varchar(20));
+
+
+select * from imported_data;
+
+
+load data infile 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/stud_info.csv' into table imported_data fields terminated by ',' enclosed by '"' lines terminated by '\n';
+
+select * from imported_data;
