@@ -1,0 +1,47 @@
+
+
+ create table customer(
+ cust_id int primary key,
+ name varchar(10) not null,
+ email varchar(20) not null,
+ address varchar(10) not null);
+
+
+ insert into customer(cust_id,name,email,address)
+ values
+ (1,'Kevin','kevin@gmail.com','Denvor'),
+ (2,'David','david@gmail.com','Detroit'),
+ (3,'Maya','maya@gmail.com','Texas'),
+ (4,'Riley','riley@gmail.com','London');
+
+
+
+ create table orders(
+  order_id int primary key,
+ cust_id int not null,
+ order_date date not null,
+ total decimal(10,2) not null,
+ foreign key(cust_id) references customer(cust_id));
+
+
+ insert into orders(order_id,cust_id,order_date,total)
+ values
+ (1,1,'2022-01-01',100),
+ (2,1,'2022-02-15',150),
+ (3,2,'2022-03-01',200),
+ (4,3,'2022-04-01',250),
+ (5,4,'2022-05-01',300),
+ (6,1,'2022-06-15',350);
+
+
+
+select c.cust_id,c.name,o.order_id,o.order_date,o.total from customer c inner join orders o on c.cust_id = o.cust_id;
+
+select c.cust_id,c.name,o.order_id,o.order_date,o.total from customer c left join orders o on c.cust_id = o.cust_id;
+
+select c.cust_id,c.name,o.order_id,o.order_date,o.total from customer c right join orders o on c.cust_id = o.cust_id;
+
+select c.cust_id,c.name,o.order_id,o.order_date,o.total from customer c right join orders o on c.cust_id = o.cust_id union select c.cust_id,c.name,o.order_id,o.order_date,o.total from orders o right join customer c on c.cust_id = o.cust_id;
+
+
+select name,email,address from customer where cust_id in (select cust_id from orders);
