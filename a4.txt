@@ -12,15 +12,6 @@ db.college.insertMany([
    { id: 4, name: "Mia", age: 20, course: "AI-ML", marks: 78 }
 ])
 
-// Perform aggregation on the college collection to calculate average marks per course
-db.college.aggregate([
-   {
-      $group: {
-         _id: "$course",
-         avgMarks: { $avg: "$marks" }
-      }
-   }
-])
 
 // Insert documents into the grades collection
 db.grades.insertMany([
@@ -29,3 +20,40 @@ db.grades.insertMany([
    { gid: 3, id: 3, sub: "DSA", grade: "A" },
    { gid: 4, id: 4, sub: "ML", grade: "C" }
 ])
+
+// Aggregate operation to calculate average marks by course
+db.college.aggregate([
+   {
+      $group: {
+         _id: "$course",
+         avgMrks: { $avg: "$marks" }
+      }
+   }
+])
+
+// Create an index on the 'id' field in the college collection
+db.college.createIndex({ id: 1 })
+
+// Display indexes in the college collection
+db.college.getIndexes()
+
+// Define a map function for map-reduce
+var mapFunction = function() {
+   emit(this.course, this.marks);
+};
+
+// Define a reduce function for map-reduce
+var reduceFunction = function(key, values) {
+   return Array.sum(values);
+};
+
+// Perform map-reduce operation to calculate total marks by course
+db.college.mapReduce(
+   mapFunction,
+   reduceFunction,
+   { out: "totalMarksByCourse" }
+)
+
+// Query the result of the map-reduce operation
+db.totalMarksByCourse.find()
+
