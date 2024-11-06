@@ -1,0 +1,142 @@
+
+
+CREATE TABLE instructors (
+instructor_id VARCHAR(10) PRIMARY KEY,
+instructor_name VARCHAR(50) NOT NULL,
+date_of_joining DATE NOT NULL
+);
+
+
+CREATE TABLE departments (
+department_id VARCHAR(10) PRIMARY KEY,
+department_name VARCHAR(255) NOT NULL,
+head_of_department VARCHAR(10),
+FOREIGN KEY (head_of_department) REFERENCES instructors(instructor_id)
+);
+
+
+CREATE TABLE students (
+enrollment_id INT PRIMARY KEY,
+student_name VARCHAR(255) NOT NULL,
+roll_no INT UNIQUE NOT NULL,
+department VARCHAR(10) NOT NULL,
+date_of_birth DATE NOT NULL,
+enrollment_date DATE NOT NULL,
+phone_no BIGINT NOT NULL,
+email VARCHAR(255) NOT NULL,
+FOREIGN KEY (department) REFERENCES departments(department_id)
+);
+
+
+INSERT INTO instructors (instructor_id, instructor_name, date_of_joining)
+VALUES
+('I001', 'Aarya', '2000-01-01'),
+('I002', 'Nikhil', '1995-06-15'),
+('I003', 'Gaurav', '1998-09-10'),
+('I004', 'Om', '2002-03-20'),
+('I005', 'Lalit', '1999-11-25'),
+('I006', 'Ketaki', '2001-02-01'),
+('I007', 'Poonam', '2004-05-15'),
+('I008', 'Yash', '1996-07-20'),
+('I009', 'Gunjan', '2003-09-10'),
+('I010', 'Rucha', '2000-04-01');
+
+
+
+INSERT INTO departments (department_id, department_name, head_of_department)
+VALUES
+('CE', 'Computer Engineering', 'I001'),
+('IT', 'Information Technology', 'I002'),
+('AI & DS', 'Artificial Intelligence and Data Science', 'I003');
+
+
+
+INSERT INTO students (enrollment_id, student_name, roll_no, department, date_of_birth, enrollment_date, phone_no, email)
+VALUES
+(1, 'Abigail Davis', 12345, 'CE', '1997-08-01', '2015-09-01', 9876543210, 'abigail.davis@example.com'),
+(2, 'Ethan Lee', 23456, 'IT', '1999-02-28', '2016-07-15', 9876543220, 'ethan.lee@example.com'),
+(3, 'Ava Brown', 34567, 'AI & DS', '2001-06-15', '2017-03-01', 9876543230, 'ava.brown@example.com'),
+(4, 'Liam Hall', 45678, 'CE', '1998-11-10', '2015-09-01', 9876543240, 'liam.hall@example.com'),
+(5, 'Isabella Martin', 56789, 'IT', '2002-05-20', '2016-07-15', 9876543250, 'isabella.martin@example.com'),
+(6, 'Olivia Patel', 67890, 'AI & DS', '1999-04-01', '2017-03-01', 9876543260, 'olivia.patel@example.com'),
+(7, 'Julian Kim', 78901, 'CE', '2003-02-15', '2015-09-01', 9876543270, 'julian.kim@example.com'),
+(8, 'Charlotte Taylor', 89012, 'IT', '1996-10-25', '2016-07-15', 9876543280, 'charlotte.taylor@example.com'),
+(9, 'Gabriel Johnson', 90123, 'AI & DS', '2001-01-10', '2017-03-01',9876543290, 'gabriel.johnson@example.com'),
+(10, 'Mia Lee', 101234, 'CE', '1998-07-05', '2015-09-01', 9876543300, 'mia.lee@example.com');
+
+
+
+select * from students;
+
+
+select * from departments;
+
+
+select * from instructors;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE VIEW it_student_roll_no AS SELECT S.student_name, S.roll_no FROM students S WHERE S.department = 'IT';
+
+
+SELECT * FROM it_student_roll_no;
+
+
+
+
+
+
+
+
+
+SELECT D.department_name, I.instructor_name FROM departments AS D, instructors AS I WHERE D.head_of_department = I.instructor_id;
+
+
+
+
+
+
+
+
+
+SELECT D.department_name, I.instructor_name AS head_of_department FROM departments AS D, instructors AS I WHERE D.head_of_department = I.instructor_id;
+
+
+
+
+
+
+
+
+
+UPDATE departments SET head_of_department = 'I005' WHERE department_id = 'CE';
+
+
+
+SELECT D.department_name, I.instructor_name AS head_of_department FROM departments AS D, instructors AS I WHERE D.head_of_department = I.instructor_id;
+
+
+
+
+
+
+
+
+
+ALTER TABLE departments RENAME TO DEPARTMENTS;
+
+
+TRUNCATE TABLE instructors;
