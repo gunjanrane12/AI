@@ -31,3 +31,6 @@ dfs(graph,visited,0)
 visited.clear()
 
 bfs(visited,0,graph)
+
+tc o(e+v)
+sc o(v)
