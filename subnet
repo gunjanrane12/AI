@@ -1,0 +1,57 @@
+def calculate_subnet(ip, hosts_per_subnet):
+    octets =[]
+    for octet in ip.split("."):
+        octets.append(int(octet))
+    
+    if 0 <= octets[0] < 128:
+        def_subnet_mask = "255.0.0.0"
+        network_bits = 8
+    elif 128 <= octets[0] < 192:
+        def_subnet_mask = "255.255.0.0"
+        network_bits = 16
+    elif 192 <= octets[0] < 224:
+        def_subnet_mask = "255.255.255.0"
+        network_bits = 24
+    else:
+        print("This IP class is not supported for subnetting.")
+        return
+
+    host_bits = (hosts_per_subnet - 1).bit_length()
+    new_prefix = 32 - host_bits
+    subnet_size = 2 ** host_bits
+    usable_hosts = subnet_size - 2
+    new_subnet_mask = '1' * new_prefix + '0' * host_bits
+    new_subnet_mask_decimal = ".".join(str(int(new_subnet_mask[i:i + 8], 2)) for i in range(0, 32, 8))
+    print('')
+    print(f"Default Subnet Mask for Class: {def_subnet_mask}")
+    print(f"New Subnet Mask: {new_subnet_mask_decimal}")
+    print(f"Usable Hosts per Subnet: {usable_hosts}")
+    print(f"Subnet Details:")
+
+    binary_ip = "".join(f"{int(octet):08b}" for octet in octets)
+    network_address_int = int(binary_ip, 2)
+    
+    subnet_count = 0
+    while subnet_count * subnet_size < 2 ** (32 - network_bits):
+        subnet_start = network_address_int + (subnet_count * subnet_size)
+        subnet_end = subnet_start + subnet_size - 1
+
+        network_address = subnet_start
+        broadcast_address = subnet_end
+        first_host = network_address + 1
+        last_host = broadcast_address - 1
+
+        def int_to_ip(addr):
+            return ".".join(str((addr >> (8 * i)) & 0xFF) for i in reversed(range(4)))
+
+        print(f"\nSubnet {subnet_count + 1}:")
+        print(f"  Network Address: {int_to_ip(network_address)}/{new_prefix}")
+        print(f"  First Usable Host: {int_to_ip(first_host)}")
+        print(f"  Last Usable Host: {int_to_ip(last_host)}")
+        print(f"  Broadcast Address: {int_to_ip(broadcast_address)}")
+
+        subnet_count += 1
+
+ip_address = input("Enter the Network IP address (e.g., 192.168.1.0): ")
+hosts_per_subnet = int(input("Enter the number of hosts per subnet required: "))
+calculate_subnet(ip_address, hosts_per_subnet)
