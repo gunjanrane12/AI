@@ -1,0 +1,91 @@
+//server
+#include <iostream>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+using namespace std;
+
+#define PORT 1337
+
+int main() {
+    int sockfd;
+    sockaddr_in servaddr{}, clientaddr{};
+    socklen_t servlen = sizeof(servaddr);
+    socklen_t clientlen = sizeof(clientlen);
+    int n;
+    char buffer[255];
+    FILE* file;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT);
+    inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr);
+
+    bind(sockfd, (struct sockaddr*)&servaddr, servlen);
+
+    n = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&clientaddr, &clientlen);
+    if (n <= 0) {
+        cout << "didn't receive anything" << endl;
+        shutdown(sockfd, SHUT_RDWR);
+        close(sockfd);
+        return 0;
+    }
+    buffer[n] = '\0';
+
+    file = fopen("fromserver.txt", "wb");
+    fwrite(buffer, sizeof(char), n, file);
+    fclose(file);
+
+    cout << "received content stored in fromserver.txt" << endl;
+
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
+    return 0;
+}
+
+//client
+#include <iostream>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+using namespace std;
+
+#define PORT 1337
+
+int main() {
+    int sockfd;
+    struct sockaddr_in servaddr{};
+    socklen_t servlen = sizeof(servaddr);
+
+    int n;
+    char buffer[255];
+    FILE* file;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT);
+    inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr);
+
+    file = fopen("file.txt", "rb");
+    if (!file) {
+        cout << "file.txt doesn't exist" << endl;
+        shutdown(sockfd, SHUT_RDWR);
+        close(sockfd);
+        return 0;
+    }
+    n = fread(buffer, sizeof(char), sizeof(buffer), file);
+    fclose(file);
+
+    sendto(sockfd, buffer, n, 0, (struct sockaddr*)&servaddr, servlen);
+    cout << "file sent" << endl;
+
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
+    return 0;
+}
