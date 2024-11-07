@@ -108,3 +108,6 @@ Graph_nodes = {
      
 }
 aStarAlgo('A', 'G')
+
+tc o(b*d)
+sc o(b*d)
