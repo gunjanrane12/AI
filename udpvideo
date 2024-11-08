@@ -1,0 +1,146 @@
+// server
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+using namespace std;
+
+#define PORT 1337
+#define FILE_SIZE 1024
+
+int main() {
+    int sockfd;
+    struct sockaddr_in servaddr{}, clientaddr{};
+    socklen_t clientlen = sizeof(clientaddr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        cout << "Socket Creation Failed" << endl;
+        return 0;
+    }
+
+    servaddr.sin_port = htons(PORT);
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    int res = bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
+    if (res < 0) {
+        cout << "Binding failed" << endl;
+        close(sockfd);
+        return 0;
+    }
+
+    char filename[255] = {0};
+    char _filename[250] = {0};
+    FILE* file;
+
+    int n = recvfrom(sockfd, _filename, sizeof(_filename) - 1, 0, (struct sockaddr*)&clientaddr, &clientlen);
+    if (n < 0) {
+        cout << "Unable to receive message" << endl;
+        close(sockfd);
+        close(sockfd);
+        return 0;
+    }
+    _filename[n] = '\0';
+
+    snprintf(filename, 5+n, "new_%s", _filename);
+    file = fopen(filename, "wb");
+
+    int bytesReceived;
+    do {
+        char* filedata = new char[FILE_SIZE];
+        bytesReceived = recvfrom(sockfd, filedata, FILE_SIZE - 1, 0, (struct sockaddr*)&clientaddr, &clientlen);
+        if (bytesReceived == 4 && filedata[0] == '!') {
+            if (strcmp("!EOF", filedata)) {
+                break;
+            }
+        }
+        filedata[bytesReceived] = '\0';
+        fwrite(filedata, 1, bytesReceived, file);
+        delete[] filedata;
+    } while (true);
+    fclose(file);
+
+    cout << "File received from client saved to " << filename << endl;
+
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
+    return 0;
+}
+
+//client
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+using namespace std;
+
+#define PORT 1337
+#define FILE_SIZE 1024
+
+int main() {
+    int sockfd;
+    struct sockaddr_in servaddr{};
+    socklen_t servlen = sizeof(servaddr);
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        cout << "Socket Creation Failed" << endl;
+        return 0;
+    }
+
+    servaddr.sin_port = htons(PORT);
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    char filename[255] = {0};
+    FILE* file;
+
+    cout << "Enter the name of file to sendto: " << flush;
+    cin.getline(filename, sizeof(filename));
+
+    file = fopen(filename, "rb");
+    if (!file) {
+        cout << "File " << filename << " does not exist.";
+        close(sockfd);
+        return 0;
+    }
+
+    int n = sendto(sockfd, filename, strlen(filename), 0, (struct sockaddr*)&servaddr, servlen);
+    if (n < 0) {
+        cout << "Unable to sendto file name" << endl;
+        close(sockfd);
+        return 0;
+    }
+
+    int bytesRead;
+    do {
+        char* filedata = new char[FILE_SIZE];
+        bytesRead = fread(filedata, 1, FILE_SIZE - 1, file);
+        if (bytesRead <= 0) {
+            break;
+        }
+        filedata[bytesRead] = '\0';
+        n = sendto(sockfd, filedata, bytesRead, 0, (struct sockaddr*)&servaddr, servlen);
+        if (n < 0) {
+            cout << "Unable to sendto file data" << endl;
+            close(sockfd);
+            return 0;
+        }
+
+        delete[] filedata;
+    } while (true);
+    fclose(file);
+    char endcommand[] = "!EOF";
+    sendto(sockfd, endcommand, strlen(endcommand), 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
+
+    cout << "File " << filename << " sent to the server successfully!" << endl;
+
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
+    return 0;
+}
